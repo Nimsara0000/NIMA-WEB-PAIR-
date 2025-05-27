@@ -1,31 +1,40 @@
-const { makeid } = require('./gen-id');
 const express = require('express');
+const router = express.Router();
 const fs = require('fs');
-let router = express.Router();
 const pino = require("pino");
-const { default: makeWASocket, useMultiFileAuthState, delay, Browsers, makeCacheableSignalKeyStore, getAggregateVotesInPollMessage, DisconnectReason, WA_DEFAULT_EPHEMERAL, jidNormalizedUser, proto, getDevice, generateWAMessageFromContent, fetchLatestBaileysVersion, makeInMemoryStore, getContentType, generateForwardMessageContent, downloadContentFromMessage, jidDecode } = require('@whiskeysockets/baileys')
+const { default: makeWASocket, useMultiFileAuthState, delay, Browsers, makeCacheableSignalKeyStore } = require('@whiskeysockets/baileys');
 
 const { upload } = require('./mega');
+
 function removeFile(FilePath) {
     if (!fs.existsSync(FilePath)) return false;
     fs.rmSync(FilePath, { recursive: true, force: true });
 }
-router.get('/', async (req, res) => {
-    const id = makeid();
-    let num = req.query.number;
-    async function GIFTED_MD_PAIR_CODE() {
-        const {
-            state,
-            saveCreds
-        } = await useMultiFileAuthState('./temp/' + id);
-        try {
-var items = ["Safari"];
-function selectRandomItem(array) {
-  var randomIndex = Math.floor(Math.random() * array.length);
-  return array[randomIndex];
+
+// Helper to generate random string ID (used for folder name)
+function makeid(length = 10) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < length; i++)
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    return result;
 }
-var randomItem = selectRandomItem(items);
-            
+
+router.get('/', async (req, res) => {
+    console.log("Pairing request received");
+    let num = req.query.number;
+
+    if (!num) {
+        return res.status(400).send({ error: "Phone number query parameter is required." });
+    }
+
+    num = num.replace(/[^0-9]/g, ''); // Clean number to digits only
+
+    const id = makeid();
+
+    async function GIFTED_MD_PAIR_CODE() {
+        const { state, saveCreds } = await useMultiFileAuthState('./temp/' + id);
+        try {
             let sock = makeWASocket({
                 auth: {
                     creds: state.creds,
@@ -35,133 +44,75 @@ var randomItem = selectRandomItem(items);
                 generateHighQualityLinkPreview: true,
                 logger: pino({ level: "fatal" }).child({ level: "fatal" }),
                 syncFullHistory: false,
-                browser: Browsers.macOS(randomItem)
+                browser: Browsers.macOS('Safari')
             });
+
             if (!sock.authState.creds.registered) {
                 await delay(1500);
-                num = num.replace(/[^0-9]/g, '');
+                console.log("Requesting pairing code for number:", num);
                 const code = await sock.requestPairingCode(num);
+
                 if (!res.headersSent) {
-                    await res.send({ code });
+                    return res.send({ code });
                 }
             }
+
             sock.ev.on('creds.update', saveCreds);
-            sock.ev.on("connection.update", async (s) => {
 
-    const {
-                    connection,
-                    lastDisconnect
-                } = s;
-                
-                if (connection == "open") {
+            sock.ev.on("connection.update", async (update) => {
+                const { connection, lastDisconnect } = update;
+
+                if (connection === "open") {
+                    console.log("Connection opened with WhatsApp");
+
                     await delay(5000);
-                    let data = fs.readFileSync(__dirname + `/temp/${id}/creds.json`);
-                    let rf = __dirname + `/temp/${id}/creds.json`;
-                    function generateRandomText() {
-                        const prefix = "3EB";
-                        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                        let randomText = prefix;
-                        for (let i = prefix.length; i < 22; i++) {
-                            const randomIndex = Math.floor(Math.random() * characters.length);
-                            randomText += characters.charAt(randomIndex);
-                        }
-                        return randomText;
-                    }
-                    const randomText = generateRandomText();
-                    try {
-                        
-                        const { upload } = require('./mega');
-                        const mega_url = await upload(fs.createReadStream(rf), `${sock.user.id}.json`);
-                        const string_session = mega_url.replace('https://mega.nz/file/', '');
-                        let md = "DINU-MD&" + string_session;
-                        let code = await sock.sendMessage(sock.user.id, { text: md });
-                        let desc = `*┏━━━━━━━━━━━━━━*
-*┃𝑆𝑅_𝐷𝙸𝙽𝚄_𝛭𝙳 𝑆𝙴𝚂𝚂𝙸𝙾𝙽 𝐼𝚂*
-*┃𝑆𝚄𝙲𝙲𝙴𝚂𝚂𝙵𝚄𝙻𝙻𝚈*
-*┃𝐶ONNECTED ⚡🔥*
-*┗━━━━━━━━━━━━━━━*
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-* || 𝐶𝑅𝛯𝜟亇𝛩𝑅 =_𝙳𝙸𝙽𝚄_𝙼𝙳💻🥷🏼
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-* || 𝑆𝑅 亇𝛯𝑆𝐻 𝛩ꪝ𝚴𝛯𝑅 _ 𝐷𝐼𝚴び
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-* || 𝛩ꪝ𝚴𝛯𝑅 = https://wa.me/+94740026280
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-* || 𝑅𝛯𝛲𝛩 = https://github.com/dinujaya423/SR-TECH_DINU
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-*•|| 🥷🏼💻𝐶𝑅𝛯𝜟亇𝛯𝐷 𝛣𝑌 "𝐷𝐼𝚴び  ||•💻*`; 
-                        await sock.sendMessage(sock.user.id, {
-text: desc,
-contextInfo: {
-externalAdReply: {
-title: "🥷🏼💻 𝑆𝑅 亇𝛯𝑆𝐻 𝐷𝐼𝚴び",
-thumbnailUrl: "https://files.catbox.moe/r8wree.jpg",
-sourceUrl: "https://whatsapp.com/channel/0029VbAeM185a246gjrJkP2X",
-mediaType: 1,
-renderLargerThumbnail: true
-}  
-}
-},
-{quoted:code })
-                    } catch (e) {
-                            let ddd = sock.sendMessage(sock.user.id, { text: e });
-                            let desc = `*┏━━━━━━━━━━━━━━*
-*┃𝑆𝑅_𝐷𝙸𝙽𝚄_𝛭𝙳 𝑆𝙴𝚂𝚂𝙸𝙾𝙽 𝐼𝚂*
-*┃𝑆𝚄𝙲𝙲𝙴𝚂𝚂𝙵𝚄𝙻𝙻𝚈*
-*┃𝐶ONNECTED ⚡🔥*
-*┗━━━━━━━━━━━━━━━*
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-* || 𝐶𝑅𝛯𝜟亇𝛩𝑅 =_𝙳𝙸𝙽𝚄_𝙼𝙳💻🥷🏼
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-* || 𝑆𝑅 亇𝛯𝑆𝐻 𝛩ꪝ𝚴𝛯𝑅 _ 𝐷𝐼𝚴び
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-* || 𝛩ꪝ𝚴𝛯𝑅 = https://wa.me/+94740026280
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-* || 𝑅𝛯𝛲𝛩 = https://github.com/dinujaya423/SR-TECH_DINU
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+                    let credFilePath = __dirname + `/temp/${id}/creds.json`;
 
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-*•|| 🥷🏼💻𝐶𝑅𝛯𝜟亇𝛯𝐷 𝛣𝑌 "𝐷𝐼𝚴び  ||•💻*`;
-                            await sock.sendMessage(sock.user.id, {
-text: desc,
-contextInfo: {
-externalAdReply: {
-title: "🥷🏼💻 𝑆𝑅 亇𝛯𝑆𝐻 𝐷𝐼𝚴び",
-thumbnailUrl: "https://files.catbox.moe/r8wree.jpg",
-sourceUrl: "https://whatsapp.com/channel/0029VbAeM185a246gjrJkP2X",
-mediaType: 2,
-renderLargerThumbnail: true,
-showAdAttribution: true
-}  
-}
-},
-{quoted:ddd })
+                    if (!fs.existsSync(credFilePath)) {
+                        console.error("Credentials file not found.");
+                        return;
                     }
+
+                    // Upload creds file to mega
+                    const mega_url = await upload(fs.createReadStream(credFilePath), `${sock.user.id}.json`);
+                    const string_session = mega_url.replace('https://mega.nz/file/', '');
+                    let md = "DINU-MD&" + string_session;
+
+                    // Send the session string back to user
+                    let codeMsg = await sock.sendMessage(sock.user.id, { text: md });
+
+                    // Send confirmation message
+                    let desc = `*Session connected successfully*`;
+
+                    await sock.sendMessage(sock.user.id, { text: desc }, { quoted: codeMsg });
+
+                    // Cleanup and close socket
                     await delay(10);
                     await sock.ws.close();
                     await removeFile('./temp/' + id);
-                    console.log(`👤 ${sock.user.id} 𝗖𝗼𝗻𝗻𝗲𝗰𝘁𝗲𝗱 ⚙️◄ 𝗥𝗲𝘀𝘁𝗮𝗿𝘁𝗶𝗻𝗴 𝗽𝗿𝗼𝗰𝗲𝘀𝘀...`);
+
+                    console.log(`User ${sock.user.id} connected. Exiting process.`);
                     await delay(10);
                     process.exit();
-                } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
+
+                } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode !== 401) {
+                    console.log("Disconnected unexpectedly, retrying...");
                     await delay(10);
                     GIFTED_MD_PAIR_CODE();
                 }
             });
+
         } catch (err) {
-            console.log("service restated");
+            console.error("Error during pairing:", err);
             await removeFile('./temp/' + id);
             if (!res.headersSent) {
-                await res.send({ code: "❗ Service Unavailable" });
+                return res.status(503).send({ code: "❗ Service Unavailable" });
             }
         }
     }
-   return await GIFTED_MD_PAIR_CODE();
-});/*
-setInterval(() => {
-    console.log("⚙️◄𝗥𝗲𝘀𝘁𝗮𝗿𝘁𝗶𝗻𝗴 𝗽𝗿𝗼𝗰𝗲𝘀𝘀...");
-    process.exit();
-}, 180000); //30min*/
+
+    await GIFTED_MD_PAIR_CODE();
+});
+
 module.exports = router;
