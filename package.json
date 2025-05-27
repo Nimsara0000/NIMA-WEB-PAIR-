@@ -4,12 +4,12 @@
   "description": "A multi functional whatsapp bot Web paircode.",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start index.js --deep-monitoring --attach --name vajira-md",
+    "start": "pm2 start index.js --name vajira-md",
     "stop": "pm2 stop vajira-md",
     "restart": "pm2 restart vajira-md"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "6.2.1",
+    "@whiskeysockets/baileys": "6.6.0",
     "@adiwajshing/keyed-db": "^0.2.4",
     "qrcode": "^1.5.3",
     "awesome-phonenumber": "^2.64.0",
@@ -17,9 +17,8 @@
     "phone": "3.1.30",
     "body-parser": "^1.20.1",
     "express": "^4.18.1",
-    "path": "^0.12.7",
     "megajs": "1.1.7",
     "pm2": "^5.4.0",
-    "async-mutex": "0.5.0"
+    "async-mutex": "0.4.1"
   }
 }
